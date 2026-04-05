@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎬 Cineflix Generator V13</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Bebas+Neue&family=Rajdhani:wght@600;700&display=swap');</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+/* ─── ROOT ─── */
+:root{--dark:#060610;--panel:#0d0d1a;--border:rgba(255,255,255,0.07);--orange:#ff6a00;--text:#dde0f0;--muted:#484860;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--dark);font-family:'Hind Siliguri',sans-serif;color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+
+/* ─── TOPBAR ─── */
+.topbar{background:linear-gradient(90deg,#0a0a18,#160f28,#0a0a18);border-bottom:1px solid rgba(255,106,0,0.25);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.tlogo{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:4px;background:linear-gradient(90deg,#ff6a00,#f5c518,#ff6a00);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 3s linear infinite;}
+.tsub{font-family:'Rajdhani',sans-serif;font-size:10px;color:var(--muted);letter-spacing:3px;}
+@keyframes shimmer{0%{background-position:0%}100%{background-position:200%}}
+
+/* ─── LAYOUT ─── */
+.layout{display:grid;grid-template-columns:295px 1fr;flex:1;overflow:hidden;}
+
+/* ─── SIDEBAR ─── */
+.sidebar{background:var(--panel);border-right:1px solid var(--border);overflow-y:auto;padding-bottom:26px;}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,106,0,0.3);border-radius:2px;}
+.sec{padding:10px 13px;border-bottom:1px solid var(--border);}
+.sec-title{font-family:'Rajdhani',sans-serif;font-size:10px;letter-spacing:3px;color:var(--orange);text-transform:uppercase;margin-bottom:8px;}
+
+/* Pills */
+.pills{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:5px;}
+.pill{padding:3px 9px;border-radius:20px;font-size:11px;cursor:pointer;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:#888;transition:all 0.2s;font-family:'Hind Siliguri',sans-serif;}
+.pill:hover{border-color:var(--orange);color:var(--orange);}
+.pill.on{background:var(--orange);border-color:var(--orange);color:#fff;}
+
+/* Inputs */
+label{display:block;font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:3px;font-family:'Rajdhani',sans-serif;font-weight:700;text-transform:uppercase;}
+input[type=text]{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:7px;padding:6px 10px;color:var(--text);font-family:'Hind Siliguri',sans-serif;font-size:13px;outline:none;transition:border-color 0.2s;}
+input:focus{border-color:var(--orange);}
+input[type=range]{width:100%;accent-color:var(--orange);margin-top:4px;}
+.f{margin-bottom:8px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+/* Type buttons */
+.tbtns{display:flex;gap:4px;flex-wrap:wrap;}
+.tbtn{flex:1;padding:6px 2px;border:1px solid rgba(255,255,255,0.08);border-radius:7px;background:transparent;color:var(--muted);cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;transition:all 0.2s;}
+.tbtn.on{background:linear-gradient(135deg,#ff6a00,#ee0979);border-color:transparent;color:#fff;}
+
+/* Theme dots */
+.tdots{display:flex;flex-wrap:wrap;gap:7px;}
+.tdot{width:25px;height:25px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform 0.2s,border-color 0.2s;}
+.tdot.on{border-color:#fff;transform:scale(1.25);}
+
+/* Toggle */
+.trow{display:flex;align-items:center;justify-content:space-between;}
+.trow-label{font-size:12px;color:var(--text);}
+.tog{width:38px;height:20px;border-radius:10px;background:rgba(255,255,255,0.08);cursor:pointer;position:relative;transition:background 0.3s;flex-shrink:0;}
+.tog.on{background:linear-gradient(135deg,#ff6a00,#ee0979);}
+.tog::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform 0.3s;}
+.tog.on::after{transform:translateX(18px);}
+
+/* Upload box */
+.ubox{border:2px dashed rgba(255,106,0,0.25);border-radius:10px;padding:12px;text-align:center;cursor:pointer;transition:all 0.3s;position:relative;background:rgba(255,106,0,0.02);}
+.ubox:hover{border-color:var(--orange);background:rgba(255,106,0,0.04);}
+.ubox input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;}
+.ubox-icon{font-size:22px;}
+.ubox-text{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5;}
+.ubox-text span{color:var(--orange);}
+#thumb{width:100%;border-radius:6px;margin-top:7px;display:none;max-height:90px;object-fit:cover;}
+
+/* Series fields */
+.series-fields{display:none;}
+.series-fields.show{display:block;}
+
+/* Buttons */
+.dl-btn{display:block;width:calc(100% - 26px);margin:13px 13px 0;padding:13px;background:linear-gradient(135deg,#ff6a00,#ee0979);border:none;border-radius:10px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all 0.3s;box-shadow:0 4px 20px rgba(255,106,0,0.4);}
+.dl-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(255,106,0,0.6);}
+.dl-btn:disabled{opacity:0.6;transform:none;cursor:not-allowed;}
+.cp-btn{display:block;width:calc(100% - 26px);margin:7px 13px 0;padding:9px;border:1px solid rgba(255,106,0,0.35);border-radius:10px;background:transparent;color:var(--orange);font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all 0.2s;}
+.cp-btn:hover{background:rgba(255,106,0,0.08);}
+
+/* ─── PREVIEW ─── */
+.preview-area{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:10px;background:radial-gradient(ellipse at center,#13102a 0%,#060610 70%);overflow:auto;}
+.plabel{font-family:'Rajdhani',sans-serif;font-size:10px;color:var(--muted);letter-spacing:3px;}
+.card-wrap{overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,0.95),0 0 0 1px rgba(255,255,255,0.07);}
+.snote{font-family:'Rajdhani',sans-serif;font-size:10px;color:var(--muted);letter-spacing:2px;}
+
+/* ─── CROP MODAL ─── */
+.crop-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.94);z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;}
+.crop-overlay.show{display:flex;}
+.crop-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;color:var(--orange);}
+.crop-hint{font-family:'Rajdhani',sans-serif;font-size:11px;color:var(--muted);letter-spacing:2px;text-align:center;}
+.crop-canvas-wrap{position:relative;width:min(90vw,500px);aspect-ratio:2/1;background:#0a0a0a;border:2px solid rgba(255,106,0,0.35);border-radius:8px;overflow:hidden;cursor:grab;user-select:none;touch-action:none;}
+.crop-canvas-wrap:active{cursor:grabbing;}
+#crop-canvas{position:absolute;top:0;left:0;}
+.crop-box{position:absolute;inset:0;border:2px solid rgba(255,106,0,0.85);pointer-events:none;border-radius:6px;}
+/* Corner handles */
+.crop-box::before,.crop-box::after{content:'';position:absolute;width:18px;height:18px;border-color:var(--orange);border-style:solid;}
+.crop-box::before{top:-2px;left:-2px;border-width:3px 0 0 3px;}
+.crop-box::after{bottom:-2px;right:-2px;border-width:0 3px 3px 0;}
+.crop-zoom-row{display:flex;align-items:center;gap:10px;width:min(90vw,500px);}
+.crop-zoom-row label{font-size:11px;color:var(--muted);letter-spacing:2px;white-space:nowrap;}
+.crop-zoom-row input{flex:1;}
+.crop-btns{display:flex;gap:10px;}
+.crop-ok{padding:11px 30px;background:linear-gradient(135deg,#ff6a00,#ee0979);border:none;border-radius:8px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;cursor:pointer;}
+.crop-cancel{padding:11px 20px;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#888;font-family:'Rajdhani',sans-serif;font-size:13px;cursor:pointer;}
+
+/* ══════════════════════════════════════
+   THE CARD — 1080 × 1080
+══════════════════════════════════════ */
+#card{
+  width:1080px;height:1080px;
+  display:flex;flex-direction:column;
+  position:relative;overflow:hidden;
+  font-family:'Hind Siliguri',sans-serif;
+}
+
+/* ── POSTER (540px) ── */
+.cp{width:100%;height:540px;position:relative;overflow:hidden;flex-shrink:0;}
+
+.cp-img-el{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;display:none;}
+
+/* Placeholder */
+.cp-ph{position:absolute;inset:0;background:linear-gradient(160deg,#1a1a2e,#0f0f22,#080818);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.cp-ph-icon{font-size:90px;opacity:0.12;}
+.cp-ph-text{font-family:'Rajdhani',sans-serif;font-size:18px;letter-spacing:10px;color:rgba(255,255,255,0.1);text-transform:uppercase;}
+
+/* Cinematic layers */
+.cp-vignette{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 20%,transparent 15%,rgba(0,0,0,0.6) 100%);pointer-events:none;z-index:2;}
+.cp-sides{position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,0.4) 0%,transparent 22%,transparent 78%,rgba(0,0,0,0.4) 100%);pointer-events:none;z-index:2;}
+.cp-grad{position:absolute;bottom:0;left:0;right:0;height:360px;pointer-events:none;z-index:3;}
+.cp-divider{position:absolute;bottom:0;left:0;right:0;height:4px;z-index:7;}
+
+/* 18+ badge — top left */
+.cp-adult{position:absolute;top:24px;left:24px;background:linear-gradient(135deg,#b71c1c,#ff1744);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:34px;padding:8px 20px;border-radius:10px;letter-spacing:3px;display:none;box-shadow:0 6px 24px rgba(183,28,28,0.8);z-index:6;}
+
+/* Type badge — top right */
+.cp-type-badge{position:absolute;top:24px;right:24px;font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;letter-spacing:3px;padding:10px 26px;border-radius:40px;color:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.7);z-index:6;}
+
+/* Big heading at bottom of poster */
+.cp-heading{position:absolute;bottom:26px;left:0;right:0;padding:0 34px;z-index:5;}
+.cp-heading-txt{
+  font-family:'Hind Siliguri',sans-serif;
+  font-size:90px;font-weight:700;line-height:1.05;
+  text-shadow:0 2px 0 rgba(0,0,0,0.9),0 4px 24px rgba(0,0,0,1),0 0 70px rgba(0,0,0,0.9),2px 2px 0 rgba(0,0,0,0.6);
+}
+
+/* ── INFO SECTION (540px) ── */
+.ci{
+  flex:1;
+  display:flex;flex-direction:column;
+  padding:20px 24px 22px;
+  gap:14px;
+  position:relative;overflow:hidden;
+}
+
+/* Deco blobs */
+.ci-deco{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.ci-blob{position:absolute;width:520px;height:520px;border-radius:50%;filter:blur(80px);opacity:0.16;top:-180px;right:-100px;}
+.ci-blob2{position:absolute;width:280px;height:280px;border-radius:50%;filter:blur(60px);opacity:0.10;bottom:-60px;left:60px;}
+.ci-scanlines{position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,rgba(255,255,255,0.012) 0px,rgba(255,255,255,0.012) 1px,transparent 1px,transparent 40px);}
+
+/* 2×2 INFO GRID */
+.ci-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:13px;flex:1;position:relative;z-index:1;}
+
+.ci-box{
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.07);
+  border-left:5px solid;
+  border-radius:18px;
+  padding:20px 20px 20px 18px;
+  display:flex;align-items:center;gap:16px;
+  overflow:hidden;position:relative;
+}
+/* Inner shimmer */
+.ci-box::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.04) 0%,transparent 55%);border-radius:inherit;pointer-events:none;}
+
+.ci-box-icon{font-size:62px;flex-shrink:0;line-height:1;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.5));}
+.ci-box-text{overflow:hidden;flex:1;min-width:0;}
+.ci-box-lbl{font-family:'Rajdhani',sans-serif;font-size:30px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,0.48);text-transform:uppercase;line-height:1;margin-bottom:7px;white-space:nowrap;}
+.ci-box-val{font-family:'Hind Siliguri',sans-serif;font-size:54px;font-weight:700;color:#fff;line-height:1.18;word-break:break-word;}
+
+/* BRAND BAR */
+.ci-brand{
+  display:flex;align-items:center;justify-content:space-between;
+  position:relative;z-index:1;
+  padding-top:14px;
+  border-top:1px solid rgba(255,255,255,0.08);
+  height:122px;flex-shrink:0;
+}
+
+.brand-left{display:flex;flex-direction:column;justify-content:center;}
+.brand-name{font-family:'Bebas Neue',sans-serif;font-size:72px;letter-spacing:9px;line-height:1;}
+.brand-tag{font-family:'Rajdhani',sans-serif;font-size:26px;letter-spacing:2px;color:rgba(255,255,255,0.32);margin-top:3px;}
+
+/* CTA center — text above, emoji below */
+.brand-center{position:absolute;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;}
+.brand-cta{font-family:'Hind Siliguri',sans-serif;font-size:34px;font-weight:700;color:rgba(255,255,255,0.82);white-space:nowrap;text-shadow:0 2px 12px rgba(0,0,0,0.6);}
+.brand-cta-icon{font-size:50px;line-height:1;}
+
+.brand-right{width:64px;}/* balance spacer */
+
+@media(max-width:700px){.layout{grid-template-columns:1fr;}.preview-area{padding:8px;}}
+
+/* ─── CARD STYLE SWITCHER ─── */
+.style-btns{display:flex;gap:5px;flex-wrap:wrap;}
+.sbtn{flex:1;padding:8px 4px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;background:transparent;color:var(--muted);cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;transition:all 0.2s;text-align:center;}
+.sbtn:hover{border-color:var(--orange);color:var(--orange);}
+.sbtn.on{background:linear-gradient(135deg,#ff6a00,#ee0979);border-color:transparent;color:#fff;}
+
+/* ══ STYLE 2 — SPLIT (Left poster / Right info) ══ */
+#card.style2{flex-direction:row;}
+#card.style2 .cp{width:460px;height:1080px;flex-shrink:0;}
+#card.style2 .cp-grad{background:linear-gradient(to right,transparent 0%,rgba(0,0,0,0.5) 100%) !important;height:100% !important;top:0;bottom:auto;}
+#card.style2 .cp-sides{display:none;}
+#card.style2 .cp-heading{bottom:40px;top:auto;transform:none;writing-mode:horizontal-tb;text-orientation:mixed;padding:0 20px;left:0;right:0;width:auto;}
+#card.style2 .cp-heading-txt{font-size:58px;writing-mode:horizontal-tb;text-orientation:mixed;}
+#card.style2 .ci{padding:28px 24px 24px;gap:14px;flex:1;}
+#card.style2 .ci-grid{grid-template-columns:1fr;grid-template-rows:repeat(4,1fr);gap:10px;}
+#card.style2 .ci-box{padding:14px 16px;border-radius:14px;}
+#card.style2 .ci-box-icon{font-size:38px;}
+#card.style2 .ci-box-lbl{font-size:18px;margin-bottom:4px;}
+#card.style2 .ci-box-val{font-size:34px;}
+#card.style2 .brand-name{font-size:48px;letter-spacing:6px;}
+#card.style2 .brand-tag{font-size:18px;}
+#card.style2 .brand-cta{font-size:24px;}
+#card.style2 .brand-cta-icon{font-size:36px;}
+#card.style2 .ci-brand{height:100px;}
+#card.style2 .cp-divider{display:none;}
+#card.style2 .cp::after{content:'';position:absolute;top:0;right:0;width:4px;height:100%;z-index:8;}
+
+/* ══ STYLE 3 — CINEMATIC MINIMAL ══ */
+#card.style3{flex-direction:column;}
+#card.style3 .cp{height:640px;}
+#card.style3 .cp-heading{bottom:100px;}
+#card.style3 .cp-heading-txt{font-size:120px;}
+#card.style3 .cp-grad{height:460px;}
+#card.style3 .ci{padding:0 50px 40px;gap:0;justify-content:flex-end;flex:1;}
+#card.style3 .ci-deco{display:none;}
+#card.style3 .ci-grid{display:none !important;}
+/* Minimal info row */
+#card.style3 .ci-minimal{display:flex;gap:0;align-items:center;justify-content:space-between;position:relative;z-index:2;padding:28px 0;border-top:2px solid rgba(255,255,255,0.2);border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:28px;}
+#card.style3 .ci-mini-item{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;}
+#card.style3 .ci-mini-sep{width:2px;height:90px;background:rgba(255,255,255,0.15);}
+#card.style3 .ci-mini-lbl{font-family:'Rajdhani',sans-serif;font-size:32px;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,0.5);text-transform:uppercase;}
+#card.style3 .ci-mini-val{font-family:'Hind Siliguri',sans-serif;font-size:56px;font-weight:700;color:#fff;text-align:center;}
+#card.style3 .ci-brand{height:120px;border-top:none;padding-top:0;flex-shrink:0;}
+#card.style3 .brand-name{font-size:80px;letter-spacing:10px;}
+#card.style3 .brand-tag{font-size:28px;}
+#card.style3 .brand-cta{font-size:38px;}
+#card.style3 .brand-cta-icon{font-size:54px;}
+
+/* ─── CAPTION PRESETS ─── */
+.preset-cats{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+.pcat{padding:5px 12px;border-radius:20px;font-size:11px;cursor:pointer;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:#888;transition:all 0.2s;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:1px;}
+.pcat:hover{border-color:var(--orange);color:var(--orange);}
+.pcat.on{background:linear-gradient(135deg,#ff6a00,#ee0979);border-color:transparent;color:#fff;}
+.preset-list{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto;padding-right:2px;}
+.preset-list::-webkit-scrollbar{width:3px;}
+.preset-list::-webkit-scrollbar-thumb{background:rgba(255,106,0,0.3);border-radius:2px;}
+.preset-item{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:10px 12px;cursor:pointer;transition:all 0.2s;position:relative;}
+.preset-item:hover{border-color:var(--orange);background:rgba(255,106,0,0.06);}
+.preset-item:active{transform:scale(0.98);}
+.preset-text{font-size:11px;color:#aaa;line-height:1.6;white-space:pre-wrap;font-family:'Hind Siliguri',sans-serif;}
+.preset-copy-hint{font-size:9px;color:var(--orange);font-family:'Rajdhani',sans-serif;letter-spacing:1px;margin-top:5px;opacity:0;}
+.preset-item:hover .preset-copy-hint{opacity:1;}
+.preset-copied{position:absolute;top:8px;right:8px;font-size:9px;background:var(--orange);color:#fff;padding:2px 7px;border-radius:10px;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:1px;opacity:0;transition:opacity 0.3s;}
+.preset-copied.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<!-- CROP MODAL -->
+<div class="crop-overlay" id="crop-overlay">
+  <div class="crop-title">📐 POSTER CROP</div>
+  <div class="crop-hint">DRAG করে position ঠিক করো &nbsp;•&nbsp; নিচের ZOOM দিয়ে size বাড়াও / কমাও</div>
+  <div class="crop-canvas-wrap" id="crop-wrap">
+    <canvas id="crop-canvas"></canvas>
+    <div class="crop-box"></div>
+  </div>
+  <div class="crop-zoom-row">
+    <label>🔍 ZOOM</label>
+    <input type="range" id="crop-zoom" min="0.2" max="3" step="0.01" value="1">
+  </div>
+  <div class="crop-btns">
+    <button class="crop-cancel" onclick="cancelCrop()">✕ বাতিল</button>
+    <button class="crop-ok" onclick="applyCrop()">✅ Apply করো</button>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div>
+    <div class="tlogo">🎬 CINEFLIX GENERATOR V13</div>
+    <div class="tsub">3 CARD STYLES · CAPTION PRESETS · MAX HD</div>
+  </div>
+  <div style="font-size:20px;">🎬</div>
+</div>
+
+<div class="layout">
+
+<!-- ══ SIDEBAR ══ -->
+<div class="sidebar">
+
+  <div class="sec">
+    <div class="sec-title">🖼️ Poster Upload</div>
+    <div class="ubox">
+      <input type="file" accept="image/*" onchange="openCrop(this)">
+      <div class="ubox-icon">📸</div>
+      <div class="ubox-text">Tap করে poster বেছে নাও<br><span>Upload → Crop → Apply</span></div>
+    </div>
+    <img id="thumb" alt="">
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">🎨 Card Style</div>
+    <div class="style-btns">
+      <button class="sbtn on" onclick="setCardStyle(1,this)">📱 Style 1<br>Classic</button>
+      <button class="sbtn"    onclick="setCardStyle(2,this)">🖼️ Style 2<br>Split</button>
+      <button class="sbtn"    onclick="setCardStyle(3,this)">🎬 Style 3<br>Cinematic</button>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">📢 Heading</div>
+    <div class="pills">
+      <div class="pill on" onclick="setPill(this,'f-head','আজকের মুভি আপডেট!')">মুভি আপডেট</div>
+      <div class="pill"    onclick="setPill(this,'f-head','নতুন সিরিজ এসেছে! 🔥')">নতুন সিরিজ</div>
+      <div class="pill"    onclick="setPill(this,'f-head','নতুন এপিসোড! ⚡')">এপিসোড</div>
+      <div class="pill"    onclick="setPill(this,'f-head','হট রিলিজ! 🔥')">হট রিলিজ</div>
+      <div class="pill"    onclick="setPill(this,'f-head','এক্সক্লুসিভ কন্টেন্ট! 💎')">এক্সক্লুসিভ</div>
+      <div class="pill"    onclick="setPill(this,'f-head','আজকের বেস্ট পিক! ⭐')">বেস্ট পিক</div>
+      <div class="pill"    onclick="setPill(this,'f-head','আজকের সিরিজ আপডেট!')">সিরিজ আপডেট</div>
+    </div>
+    <input type="text" id="f-head" value="আজকের মুভি আপডেট!" oninput="upd()">
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">📺 Content Type</div>
+    <div class="tbtns">
+      <button class="tbtn on" onclick="setType('Movie','🎬',this,false)">🎬 Movie</button>
+      <button class="tbtn"    onclick="setType('Series','📺',this,true)">📺 Series</button>
+      <button class="tbtn"    onclick="setType('Episode','🎞️',this,true)">🎞️ Episode</button>
+      <button class="tbtn"    onclick="setType('Short','⚡',this,false)">⚡ Short</button>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">🎬 Content Info</div>
+    <div class="f">
+      <label>নাম (Title)</label>
+      <input type="text" id="f-name" value="NEON NOIR" oninput="upd()">
+    </div>
+    <div class="f">
+      <label>জনরা (Genre)</label>
+      <div class="pills">
+        <div class="pill on" onclick="setPill(this,'f-genre','অ্যাকশন / থ্রিলার')">অ্যাকশন</div>
+        <div class="pill"    onclick="setPill(this,'f-genre','রোমান্স / ড্রামা')">রোমান্স</div>
+        <div class="pill"    onclick="setPill(this,'f-genre','কমেডি')">কমেডি</div>
+        <div class="pill"    onclick="setPill(this,'f-genre','হরর / সাসপেন্স')">হরর</div>
+        <div class="pill"    onclick="setPill(this,'f-genre','সায়েন্স ফিকশন')">Sci-Fi</div>
+        <div class="pill"    onclick="setPill(this,'f-genre','ক্রাইম / মিস্ট্রি')">ক্রাইম</div>
+        <div class="pill"    onclick="setPill(this,'f-genre','অ্যানিমেশন')">Animation</div>
+        <div class="pill"    onclick="setPill(this,'f-genre','অ্যাডভেঞ্চার')">Adventure</div>
+      </div>
+      <input type="text" id="f-genre" value="অ্যাকশন / থ্রিলার" oninput="upd()">
+    </div>
+
+    <!-- SERIES ONLY FIELDS -->
+    <div class="series-fields" id="series-fields">
+      <div class="g2">
+        <div class="f">
+          <label>📺 Season</label>
+          <div class="pills">
+            <div class="pill on" onclick="setPill(this,'f-season','S01')">S01</div>
+            <div class="pill"    onclick="setPill(this,'f-season','S02')">S02</div>
+            <div class="pill"    onclick="setPill(this,'f-season','S03')">S03</div>
+            <div class="pill"    onclick="setPill(this,'f-season','S04')">S04</div>
+            <div class="pill"    onclick="setPill(this,'f-season','S05')">S05</div>
+          </div>
+          <input type="text" id="f-season" value="S01" oninput="upd()">
+        </div>
+        <div class="f">
+          <label>🎞️ Episode</label>
+          <div class="pills">
+            <div class="pill on" onclick="setPill(this,'f-ep','E01')">E01</div>
+            <div class="pill"    onclick="setPill(this,'f-ep','E02')">E02</div>
+            <div class="pill"    onclick="setPill(this,'f-ep','E03')">E03</div>
+            <div class="pill"    onclick="setPill(this,'f-ep','E05')">E05</div>
+            <div class="pill"    onclick="setPill(this,'f-ep','E10')">E10</div>
+          </div>
+          <input type="text" id="f-ep" value="E01" oninput="upd()">
+        </div>
+      </div>
+    </div>
+
+    <div class="g2">
+      <div class="f">
+        <label>⭐ IMDb Rating</label>
+        <div class="pills">
+          <div class="pill"    onclick="setPill(this,'f-rating','9.0/10')">9.0</div>
+          <div class="pill"    onclick="setPill(this,'f-rating','8.5/10')">8.5</div>
+          <div class="pill on" onclick="setPill(this,'f-rating','8.1/10')">8.1</div>
+          <div class="pill"    onclick="setPill(this,'f-rating','7.5/10')">7.5</div>
+          <div class="pill"    onclick="setPill(this,'f-rating','7.0/10')">7.0</div>
+          <div class="pill"    onclick="setPill(this,'f-rating','N/A')">N/A</div>
+        </div>
+        <input type="text" id="f-rating" value="8.1/10" oninput="upd()">
+      </div>
+      <div class="f">
+        <label>🌐 ভাষা</label>
+        <div class="pills">
+          <div class="pill on" onclick="setPill(this,'f-lang','ইংরেজি')">ইংরেজি</div>
+          <div class="pill"    onclick="setPill(this,'f-lang','বাংলা')">বাংলা</div>
+          <div class="pill"    onclick="setPill(this,'f-lang','হিন্দি')">হিন্দি</div>
+          <div class="pill"    onclick="setPill(this,'f-lang','বাং+হিন্দি')">বাং+হিন</div>
+          <div class="pill"    onclick="setPill(this,'f-lang','কোরিয়ান')">কোরিয়ান</div>
+          <div class="pill"    onclick="setPill(this,'f-lang','জাপানিজ')">জাপানিজ</div>
+        </div>
+        <input type="text" id="f-lang" value="ইংরেজি" oninput="upd()">
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">🔞 Adult Content</div>
+    <div class="trow">
+      <span class="trow-label">18+ Badge দেখাও</span>
+      <div class="tog" id="adult-tog" onclick="toggleAdult()"></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">🎨 Color Theme</div>
+    <div class="tdots">
+      <div class="tdot on" style="background:linear-gradient(135deg,#ff6a00,#f5c518)" onclick="setTheme('gold',this)" title="Gold"></div>
+      <div class="tdot"    style="background:linear-gradient(135deg,#0d47a1,#42a5f5)" onclick="setTheme('blue',this)" title="Blue"></div>
+      <div class="tdot"    style="background:linear-gradient(135deg,#880e4f,#f06292)" onclick="setTheme('pink',this)" title="Pink"></div>
+      <div class="tdot"    style="background:linear-gradient(135deg,#1b5e20,#69f0ae)" onclick="setTheme('green',this)" title="Green"></div>
+      <div class="tdot"    style="background:linear-gradient(135deg,#4a148c,#ce93d8)" onclick="setTheme('purple',this)" title="Purple"></div>
+      <div class="tdot"    style="background:linear-gradient(135deg,#b71c1c,#ff5252)" onclick="setTheme('red',this)" title="Red"></div>
+      <div class="tdot"    style="background:linear-gradient(135deg,#006064,#00e5ff)" onclick="setTheme('cyan',this)" title="Cyan"></div>
+      <div class="tdot"    style="background:linear-gradient(135deg,#e65100,#ffcc02)" onclick="setTheme('amber',this)" title="Amber"></div>
+      <div class="tdot"    style="background:linear-gradient(135deg,#1a237e,#7c4dff)" onclick="setTheme('indigo',this)" title="Indigo"></div>
+      <div class="tdot"    style="background:linear-gradient(135deg,#004d40,#64ffda)" onclick="setTheme('teal',this)" title="Teal"></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">🔗 Telegram Bot</div>
+    <input type="text" id="f-bot" value="@Cinaflix_Streembot" oninput="upd()">
+    <div style="font-size:10px;color:var(--muted);margin-top:5px;">Caption copy করলে t.me/ link আসবে</div>
+  </div>
+
+  <!-- CAPTION PRESETS -->
+  <div class="sec">
+    <div class="sec-title">📋 Caption Presets</div>
+    <div class="preset-cats">
+      <div class="pcat on" onclick="showCat('hype',this)">🔥 Hype</div>
+      <div class="pcat" onclick="showCat('chill',this)">😎 Chill</div>
+      <div class="pcat" onclick="showCat('dramatic',this)">😱 Dramatic</div>
+      <div class="pcat" onclick="showCat('romance',this)">💕 Romance</div>
+      <div class="pcat" onclick="showCat('horror',this)">👻 Horror</div>
+      <div class="pcat" onclick="showCat('action',this)">💥 Action</div>
+      <div class="pcat" onclick="showCat('comedy',this)">😂 Comedy</div>
+      <div class="pcat" onclick="showCat('scifi',this)">🚀 Sci-Fi</div>
+    </div>
+    <div class="preset-list" id="preset-list"></div>
+  </div>
+
+  <button class="dl-btn" onclick="dlCard()">⬇️ PNG DOWNLOAD (MAX QUALITY)</button>
+  <button class="cp-btn" onclick="copyCaption()">📋 Full Caption Copy করো</button>
+
+</div><!-- /sidebar -->
+
+<!-- ══ PREVIEW ══ -->
+<div class="preview-area">
+  <div class="plabel">👁️ LIVE PREVIEW — 1080×1080</div>
+  <div class="card-wrap" id="card-wrap">
+    <div id="card">
+
+      <!-- POSTER ZONE -->
+      <div class="cp">
+        <div class="cp-ph" id="cp-ph">
+          <div class="cp-ph-icon">🎬</div>
+          <div class="cp-ph-text">Poster Upload করো</div>
+        </div>
+        <img class="cp-img-el" id="cp-img" alt="">
+
+        <!-- Cinematic overlays (z-index 2,3) — above image, below text -->
+        <div class="cp-vignette"></div>
+        <div class="cp-sides"></div>
+        <div class="cp-grad" id="cp-grad"></div>
+        <div class="cp-divider" id="cp-divider"></div>
+
+        <!-- Badges (z-index 6) -->
+        <div class="cp-adult" id="cp-adult">🔞 18+</div>
+        <div class="cp-type-badge" id="cp-type">🎬 MOVIE</div>
+
+        <!-- Heading (z-index 5) -->
+        <div class="cp-heading">
+          <div class="cp-heading-txt" id="ci-head">আজকের মুভি আপডেট!</div>
+        </div>
+      </div>
+
+      <!-- INFO ZONE -->
+      <div class="ci" id="ci">
+        <div class="ci-deco">
+          <div class="ci-blob"  id="ci-blob"></div>
+          <div class="ci-blob2" id="ci-blob2"></div>
+          <div class="ci-scanlines"></div>
+        </div>
+
+        <!-- STYLE 3 MINIMAL ROW -->
+        <div class="ci-minimal" id="ci-minimal" style="display:none;">
+          <div class="ci-mini-item">
+            <div class="ci-mini-lbl">জনরা</div>
+            <div class="ci-mini-val" id="cm-genre">অ্যাকশন</div>
+          </div>
+          <div class="ci-mini-sep"></div>
+          <div class="ci-mini-item">
+            <div class="ci-mini-lbl">IMDb</div>
+            <div class="ci-mini-val" id="cm-rating">8.1/10</div>
+          </div>
+          <div class="ci-mini-sep"></div>
+          <div class="ci-mini-item">
+            <div class="ci-mini-lbl">ভাষা</div>
+            <div class="ci-mini-val" id="cm-lang">ইংরেজি</div>
+          </div>
+        </div>
+
+        <div class="ci-grid">
+
+          <!-- 1: Name -->
+          <div class="ci-box" id="box-name">
+            <div class="ci-box-icon">🎬</div>
+            <div class="ci-box-text">
+              <div class="ci-box-lbl" id="lbl-name">মুভির নাম</div>
+              <div class="ci-box-val" id="cv-name">NEON NOIR</div>
+            </div>
+          </div>
+
+          <!-- 2: Genre -->
+          <div class="ci-box" id="box-genre">
+            <div class="ci-box-icon">🎭</div>
+            <div class="ci-box-text">
+              <div class="ci-box-lbl">জনরা</div>
+              <div class="ci-box-val" id="cv-genre">অ্যাকশন / থ্রিলার</div>
+            </div>
+          </div>
+
+          <!-- 3: IMDb (Movie) / Season•Episode (Series) -->
+          <div class="ci-box" id="box-r">
+            <div class="ci-box-icon" id="box-r-icon">⭐</div>
+            <div class="ci-box-text">
+              <div class="ci-box-lbl" id="box-r-lbl">IMDb রেটিং</div>
+              <div class="ci-box-val" id="cv-r">8.1/10</div>
+            </div>
+          </div>
+
+          <!-- 4: Language -->
+          <div class="ci-box" id="box-lang">
+            <div class="ci-box-icon">🌐</div>
+            <div class="ci-box-text">
+              <div class="ci-box-lbl">ভাষা</div>
+              <div class="ci-box-val" id="cv-lang">ইংরেজি</div>
+            </div>
+          </div>
+
+        </div><!-- /ci-grid -->
+
+        <!-- BRAND BAR -->
+        <div class="ci-brand">
+          <div class="brand-left">
+            <div class="brand-name" id="ci-bname">CINEFLIX</div>
+            <div class="brand-tag"  id="ci-btag">@Cinaflix_Streembot</div>
+          </div>
+          <div class="brand-center">
+            <div class="brand-cta">ক্লিক করুন</div>
+            <div class="brand-cta-icon">👇🏻</div>
+          </div>
+          <div class="brand-right"></div>
+        </div>
+
+      </div><!-- /ci -->
+    </div><!-- /card -->
+  </div><!-- /card-wrap -->
+  <div class="snote">📐 1080×1080px · 3x = 3240×3240 PNG output · MAX HD</div>
+</div><!-- /preview-area -->
+
+</div><!-- /layout -->
+
+<script>
+/* ═══════════════════════════════════════
+   THEMES
+═══════════════════════════════════════ */
+const T={
+  gold:  {bg:'#0f0d14',cb:'#0d0b12',blob:'#ff6a00',a2:'#f5c518',badge:'linear-gradient(135deg,#ff6a00,#ee0979)',grad:'#0f0d14',acc:'#f5c518',rb:'#ff6a00',glow:'#ff8c00'},
+  blue:  {bg:'#090e1c',cb:'#080c18',blob:'#1565c0',a2:'#42a5f5',badge:'linear-gradient(135deg,#0d47a1,#42a5f5)',grad:'#090e1c',acc:'#64b5f6',rb:'#1e88e5',glow:'#42a5f5'},
+  pink:  {bg:'#130810',cb:'#100610',blob:'#880e4f',a2:'#f06292',badge:'linear-gradient(135deg,#880e4f,#f06292)',grad:'#130810',acc:'#f48fb1',rb:'#e91e8c',glow:'#f06292'},
+  green: {bg:'#07130a',cb:'#060f08',blob:'#1b5e20',a2:'#69f0ae',badge:'linear-gradient(135deg,#1b5e20,#69f0ae)',grad:'#07130a',acc:'#69f0ae',rb:'#2e7d32',glow:'#69f0ae'},
+  purple:{bg:'#0d0814',cb:'#0a0612',blob:'#4a148c',a2:'#ce93d8',badge:'linear-gradient(135deg,#4a148c,#ce93d8)',grad:'#0d0814',acc:'#ce93d8',rb:'#7b1fa2',glow:'#ce93d8'},
+  red:   {bg:'#130808',cb:'#100606',blob:'#b71c1c',a2:'#ff5252',badge:'linear-gradient(135deg,#b71c1c,#ff5252)',grad:'#130808',acc:'#ff5252',rb:'#c62828',glow:'#ff5252'},
+  cyan:  {bg:'#050e10',cb:'#040c0e',blob:'#006064',a2:'#00e5ff',badge:'linear-gradient(135deg,#006064,#00e5ff)',grad:'#050e10',acc:'#00e5ff',rb:'#00838f',glow:'#00e5ff'},
+  amber: {bg:'#120d05',cb:'#100b04',blob:'#e65100',a2:'#ffcc02',badge:'linear-gradient(135deg,#e65100,#ffcc02)',grad:'#120d05',acc:'#ffcc02',rb:'#ef6c00',glow:'#ffcc02'},
+  indigo:{bg:'#080614',cb:'#060412',blob:'#1a237e',a2:'#7c4dff',badge:'linear-gradient(135deg,#1a237e,#7c4dff)',grad:'#080614',acc:'#7c4dff',rb:'#283593',glow:'#7c4dff'},
+  teal:  {bg:'#041010',cb:'#030d0d',blob:'#004d40',a2:'#64ffda',badge:'linear-gradient(135deg,#004d40,#64ffda)',grad:'#041010',acc:'#64ffda',rb:'#00695c',glow:'#64ffda'},
+};
+
+let curTheme='gold', curType='Movie', curEmoji='🎬', isAdult=false, isSeries=false;
+
+/* ═══════════════════════════════════════
+   CROP SYSTEM
+═══════════════════════════════════════ */
+let cropImg=null, cropX=0, cropY=0, cropScale=1;
+let cropDragging=false, cropLastX=0, cropLastY=0;
+let CROP_W=500, CROP_H=250;
+const CARD_W=1080, CARD_H=540;
+
+function openCrop(inp){
+  const f=inp.files[0]; if(!f)return;
+  const rd=new FileReader();
+  rd.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      cropImg=img;
+      // Read actual crop-wrap dimensions after layout
+      const wrap=document.getElementById('crop-wrap');
+      CROP_W=wrap.clientWidth||500;
+      CROP_H=wrap.clientHeight||250;
+      // Fit image
+      const sc=Math.max(CROP_W/img.width, CROP_H/img.height);
+      cropScale=sc;
+      cropX=(CROP_W-img.width*sc)/2;
+      cropY=(CROP_H-img.height*sc)/2;
+      const zo=document.getElementById('crop-zoom');
+      zo.min=sc*0.3; zo.max=sc*4; zo.step=sc*0.005; zo.value=sc;
+      setupCropCanvas();
+      document.getElementById('crop-overlay').classList.add('show');
+      drawCrop();
+    };
+    img.src=e.target.result;
+  };
+  rd.readAsDataURL(f);
+  inp.value='';
+}
+
+function setupCropCanvas(){
+  const cv=document.getElementById('crop-canvas');
+  cv.width=CROP_W; cv.height=CROP_H;
+  cv.style.width=CROP_W+'px'; cv.style.height=CROP_H+'px';
+
+  const wrap=document.getElementById('crop-wrap');
+  wrap.onpointerdown=e=>{cropDragging=true;cropLastX=e.clientX;cropLastY=e.clientY;wrap.setPointerCapture(e.pointerId);};
+  wrap.onpointermove=e=>{
+    if(!cropDragging)return;
+    cropX+=e.clientX-cropLastX; cropY+=e.clientY-cropLastY;
+    cropLastX=e.clientX; cropLastY=e.clientY;
+    clampCrop(); drawCrop();
+  };
+  wrap.onpointerup=()=>{cropDragging=false;};
+
+  document.getElementById('crop-zoom').oninput=e=>{
+    const oldS=cropScale;
+    cropScale=parseFloat(e.target.value);
+    // Zoom towards center
+    cropX=CROP_W/2-(CROP_W/2-cropX)*(cropScale/oldS);
+    cropY=CROP_H/2-(CROP_H/2-cropY)*(cropScale/oldS);
+    clampCrop(); drawCrop();
+  };
+}
+
+function clampCrop(){
+  const w=cropImg.width*cropScale, h=cropImg.height*cropScale;
+  if(cropX>0)cropX=0;
+  if(cropY>0)cropY=0;
+  if(cropX+w<CROP_W)cropX=CROP_W-w;
+  if(cropY+h<CROP_H)cropY=CROP_H-h;
+}
+
+function drawCrop(){
+  const cv=document.getElementById('crop-canvas');
+  const ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,CROP_W,CROP_H);
+  ctx.drawImage(cropImg,cropX,cropY,cropImg.width*cropScale,cropImg.height*cropScale);
+}
+
+function applyCrop(){
+  const rx=CARD_W/CROP_W, ry=CARD_H/CROP_H;
+  // Use 2x resolution for sharper crop output
+  const scale=2;
+  const out=document.createElement('canvas');
+  out.width=CARD_W*scale; out.height=CARD_H*scale;
+  const ctx=out.getContext('2d');
+  ctx.imageSmoothingEnabled=true;
+  ctx.imageSmoothingQuality='high';
+  ctx.drawImage(cropImg,
+    cropX*rx*scale, cropY*ry*scale,
+    cropImg.width*cropScale*rx*scale,
+    cropImg.height*cropScale*ry*scale
+  );
+  // Use PNG for lossless quality inside card, JPEG only for final download
+  const url=out.toDataURL('image/png');
+  const img=document.getElementById('cp-img');
+  img.src=url; img.style.display='block';
+  document.getElementById('cp-ph').style.display='none';
+  const t=document.getElementById('thumb');
+  t.src=url; t.style.display='block';
+  cancelCrop();
+}
+
+function cancelCrop(){
+  document.getElementById('crop-overlay').classList.remove('show');
+}
+
+/* ═══════════════════════════════════════
+   AUTO FONT SIZE (Unicode-safe)
+═══════════════════════════════════════ */
+function autoSize(el, maxPx, minPx, safeCh){
+  const len=[...el.textContent].length;
+  if(len<=safeCh){ el.style.fontSize=maxPx+'px'; return; }
+  const size=Math.max(minPx, Math.floor(maxPx*Math.sqrt(safeCh/len)));
+  el.style.fontSize=size+'px';
+}
+
+/* ═══════════════════════════════════════
+   SCALE PREVIEW
+═══════════════════════════════════════ */
+function scaleCard(){
+  const wrap=document.getElementById('card-wrap');
+  const pa=wrap.parentElement;
+  const avail=Math.min(pa.clientWidth-32,pa.clientHeight-70);
+  const s=Math.min(1,avail/1080);
+  const card=document.getElementById('card');
+  card.style.transform=`scale(${s})`;
+  card.style.transformOrigin='top left';
+  wrap.style.width=(1080*s)+'px';
+  wrap.style.height=(1080*s)+'px';
+}
+window.addEventListener('resize',scaleCard); scaleCard();
+
+/* ═══════════════════════════════════════
+   CONTROLS
+═══════════════════════════════════════ */
+function setPill(el,fid,val){
+  el.parentElement.querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById(fid).value=val;
+  upd();
+}
+
+function setType(t,em,btn,series){
+  curType=t; curEmoji=em; isSeries=series;
+  document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('series-fields').classList.toggle('show',series);
+  document.getElementById('lbl-name').textContent=series?'সিরিজের নাম':'মুভির নাম';
+  upd();
+}
+
+function toggleAdult(){
+  isAdult=!isAdult;
+  document.getElementById('adult-tog').classList.toggle('on',isAdult);
+  document.getElementById('cp-adult').style.display=isAdult?'flex':'none';
+}
+
+function setTheme(name,dot){
+  curTheme=name;
+  document.querySelectorAll('.tdot').forEach(d=>d.classList.remove('on'));
+  dot.classList.add('on');
+  applyTheme();
+}
+
+function applyTheme(){
+  const t=T[curTheme];
+
+  document.getElementById('card').style.background=t.bg;
+  document.getElementById('ci').style.background=t.cb;
+  document.getElementById('ci-blob').style.background=t.blob;
+  document.getElementById('ci-blob2').style.background=t.a2;
+
+  // Poster gradient — smooth blend into info bg
+  document.getElementById('cp-grad').style.background=
+    `linear-gradient(to bottom,transparent 0%,${t.grad}cc 55%,${t.grad} 100%)`;
+
+  // Glow divider
+  document.getElementById('cp-divider').style.background=
+    `linear-gradient(90deg,transparent 0%,${t.glow}aa 25%,${t.glow} 50%,${t.glow}aa 75%,transparent 100%)`;
+  document.getElementById('cp-divider').style.boxShadow=
+    `0 0 12px 2px ${t.glow}66`;
+
+  // Type badge
+  const badge=document.getElementById('cp-type');
+  badge.style.background=t.badge;
+  badge.textContent=curEmoji+' '+curType.toUpperCase();
+  badge.style.boxShadow=`0 4px 20px rgba(0,0,0,0.7),0 0 12px ${t.glow}44`;
+
+  // Heading
+  const head=document.getElementById('ci-head');
+  head.style.color=t.acc;
+  head.style.textShadow=`0 2px 0 rgba(0,0,0,0.9),0 4px 28px rgba(0,0,0,1),0 0 80px rgba(0,0,0,0.95),2px 2px 0 rgba(0,0,0,0.7)`;
+
+  // Box borders
+  document.querySelectorAll('.ci-box').forEach(b=>b.style.borderLeftColor=t.rb);
+
+  // Brand name gradient
+  const bn=document.getElementById('ci-bname');
+  bn.style.background=`linear-gradient(90deg,${t.blob},${t.acc})`;
+  bn.style.webkitBackgroundClip='text';
+  bn.style.webkitTextFillColor='transparent';
+  bn.style.backgroundClip='text';
+
+  // Brand divider
+  document.querySelector('.ci-brand').style.borderTopColor=`${t.rb}55`;
+
+  // Style 2 — vertical glow on right edge of poster
+  const cpEl=document.querySelector('.cp');
+  if(curCardStyle===2){
+    cpEl.style.setProperty('--glow-color',t.glow);
+    const pseudoStyle=document.getElementById('style2-glow')||document.createElement('style');
+    pseudoStyle.id='style2-glow';
+    pseudoStyle.textContent=`#card.style2 .cp::after{background:linear-gradient(to bottom,transparent 0%,${t.glow}aa 30%,${t.glow} 50%,${t.glow}aa 70%,transparent 100%);box-shadow:0 0 18px 3px ${t.glow}66;}`;
+    document.head.appendChild(pseudoStyle);
+  }
+}
+
+function upd(){
+  // Heading
+  const head=document.getElementById('f-head').value;
+  document.getElementById('ci-head').textContent=head;
+  autoSize(document.getElementById('ci-head'),90,50,13);
+
+  // Name
+  const name=document.getElementById('f-name').value;
+  document.getElementById('cv-name').textContent=name;
+  autoSize(document.getElementById('cv-name'),50,26,10);
+
+  // Genre
+  const genre=document.getElementById('f-genre').value;
+  document.getElementById('cv-genre').textContent=genre;
+  autoSize(document.getElementById('cv-genre'),50,26,10);
+
+  // IMDb / S·E
+  if(isSeries){
+    const s=document.getElementById('f-season').value||'S01';
+    const ep=document.getElementById('f-ep').value||'E01';
+    document.getElementById('box-r-icon').textContent='📺';
+    document.getElementById('box-r-lbl').textContent='Season • Episode';
+    const se=`${s} • ${ep}`;
+    document.getElementById('cv-r').textContent=se;
+    autoSize(document.getElementById('cv-r'),50,30,10);
+  } else {
+    const rating=document.getElementById('f-rating').value;
+    document.getElementById('box-r-icon').textContent='⭐';
+    document.getElementById('box-r-lbl').textContent='IMDb রেটিং';
+    document.getElementById('cv-r').textContent=rating;
+    autoSize(document.getElementById('cv-r'),50,32,10);
+  }
+
+  // Language
+  const lang=document.getElementById('f-lang').value;
+  document.getElementById('cv-lang').textContent=lang;
+  autoSize(document.getElementById('cv-lang'),50,26,10);
+
+  // Bot tag
+  document.getElementById('ci-btag').textContent=document.getElementById('f-bot').value;
+
+  // Style 3 minimal row sync
+  document.getElementById('cm-genre').textContent=document.getElementById('f-genre').value||'অ্যাকশন';
+  document.getElementById('cm-rating').textContent=document.getElementById('f-rating').value||'8.1/10';
+  document.getElementById('cm-lang').textContent=document.getElementById('f-lang').value||'ইংরেজি';
+
+  applyTheme();
+  renderPresets();
+}
+
+/* ═══════════════════════════════════════
+   DOWNLOAD
+═══════════════════════════════════════ */
+async function dlCard(){
+  const btn=document.querySelector('.dl-btn');
+  btn.textContent='⏳ Rendering...'; btn.disabled=true;
+
+  try{
+    await document.fonts.ready;
+
+    // Clone card at full 1080x1080 size off-screen
+    const card=document.getElementById('card');
+    const clone=card.cloneNode(true);
+    clone.style.transform='none';
+    clone.style.position='fixed';
+    clone.style.top='-9999px';
+    clone.style.left='-9999px';
+    clone.style.width='1080px';
+    clone.style.height='1080px';
+    clone.style.zIndex='-1';
+    // Preserve style class
+    clone.className=card.className;
+    document.body.appendChild(clone);
+
+    // Show minimal row if style3
+    const minRow=clone.querySelector('#ci-minimal');
+    if(minRow) minRow.style.display=(curCardStyle===3)?'flex':'none';
+
+    // Copy poster image src directly into clone
+    const origImg=document.getElementById('cp-img');
+    if(origImg && origImg.src && origImg.style.display!=='none'){
+      const cloneImg=clone.querySelector('#cp-img');
+      if(cloneImg){
+        cloneImg.src=origImg.src;
+        cloneImg.style.display='block';
+        clone.querySelector('#cp-ph').style.display='none';
+      }
+    }
+
+    // Wait for clone to settle
+    await new Promise(r=>setTimeout(r,800));
+
+    const canvas=await html2canvas(clone,{
+      scale:2,
+      useCORS:true,
+      allowTaint:true,
+      width:1080,
+      height:1080,
+      backgroundColor:T[curTheme].bg,
+      logging:false,
+      imageTimeout:30000,
+    });
+
+    document.body.removeChild(clone);
+
+    const a=document.createElement('a');
+    const n=document.getElementById('f-name').value||'cineflix';
+    a.download=`cineflix-${n.replace(/\s+/g,'-').toLowerCase()}.png`;
+    a.href=canvas.toDataURL('image/png');
+    a.click();
+    btn.textContent='✅ Downloaded!';
+    setTimeout(()=>{btn.textContent='⬇️ PNG DOWNLOAD (MAX QUALITY)';btn.disabled=false;},2500);
+  }catch(err){
+    console.error(err);
+    btn.textContent='❌ Error! আবার try করো'; btn.disabled=false;
+  }
+}
+
+/* ═══════════════════════════════════════
+   CAPTION (with Telegram link)
+═══════════════════════════════════════ */
+function copyCaption(){
+  const n=document.getElementById('f-name').value;
+  const g=document.getElementById('f-genre').value;
+  const r=document.getElementById('f-rating').value;
+  const l=document.getElementById('f-lang').value;
+  const bot=document.getElementById('f-bot').value.replace('@','').trim();
+  const link=bot.startsWith('t.me/')?`https://${bot}`:`https://t.me/${bot}`;
+  const ad=isAdult?'\n🔞 18+ Content Only':'';
+  const tp=curEmoji+' '+curType;
+
+  let seRow='';
+  if(isSeries){
+    const s=document.getElementById('f-season').value;
+    const ep=document.getElementById('f-ep').value;
+    seRow=`\n📺 Season/Ep: ${s} • ${ep}`;
+  }
+
+  const cap=`${tp}: ${n}\n━━━━━━━━━━━━━━━━\n🎭 জনরা: ${g}${seRow}\n⭐ IMDb: ${r}\n🌐 ভাষা: ${l}${ad}\n━━━━━━━━━━━━━━━━\n📥 Download করতে ক্লিক করুন 👇🏻\n${link}`;
+
+  navigator.clipboard.writeText(cap).then(()=>{
+    const btn=document.querySelector('.cp-btn');
+    btn.textContent='✅ Copied!';
+    setTimeout(()=>{btn.textContent='📋 Caption Copy করো';},2200);
+  }).catch(()=>{
+    // Fallback for mobile
+    const ta=document.createElement('textarea');
+    ta.value=cap; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn=document.querySelector('.cp-btn');
+    btn.textContent='✅ Copied!';
+    setTimeout(()=>{btn.textContent='📋 Caption Copy করো';},2200);
+  });
+}
+
+/* ═══════════════════════════════════════
+   CARD STYLE SWITCHER
+═══════════════════════════════════════ */
+let curCardStyle=1;
+
+function setCardStyle(n, btn){
+  curCardStyle=n;
+  document.querySelectorAll('.sbtn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const card=document.getElementById('card');
+  card.classList.remove('style2','style3');
+  if(n===2) card.classList.add('style2');
+  if(n===3) card.classList.add('style3');
+  // show/hide minimal row
+  document.getElementById('ci-minimal').style.display=(n===3)?'flex':'none';
+  // sync glow divider for style2
+  applyTheme();
+  scaleCard();
+}
+
+
+const PRESETS={
+  hype:[
+    `🔥 {NAME} এসে গেছে!\n💥 এই {TYPE} না দেখলে সত্যিই মিস করবে!\nএকবার শুরু করলে আর থামতে পারবে না 😤\n⭐ IMDb: {RATING} | 🌐 {LANG}\n👇 এখনই দেখো`,
+    `🚨 ALERT!\n{NAME} — এই {TYPE} টা এখন সবাই দেখছে!\nকেন দেখছে সেটা নিজে বুঝে নাও 😏\n⭐ {RATING} | {LANG}\n👇 App খোলো`,
+    `💣 {NAME}\nভাই এইটা দেখসো?? না দেখলে আজকেই দেখো!\n{GENRE} — একদম 🔥🔥🔥\n⭐ IMDb {RATING}\n👇 দেরি না করে App খোলো`,
+    `😤 {NAME} দেখে মাথা নষ্ট হয়ে গেছে!\nএত ভালো {TYPE} অনেকদিন আসেনি!\n🎭 {GENRE} | ⭐ {RATING}\n👇 তুমিও দেখো`,
+    `🏆 আজকের বেস্ট পিক!\n{NAME}\n{GENRE} lover দের জন্য এইটা must watch!\n⭐ {RATING} | 🌐 {LANG}\n👇 App এ দেখো`,
+    `⚡ Hot Release!\n{NAME} — এইটা দেখার পর অন্য {TYPE} ভালো লাগবে না!\nTrust me 😎\n⭐ {RATING}\n👇 এখনই দেখো`,
+    `🎯 {NAME}\nএই {TYPE} skip করলে পরে পস্তাবে!\n{GENRE} | IMDb {RATING} | {LANG}\n👇 App খোলো এখনই`,
+    `💥 বস লেভেলের {TYPE}!\n{NAME}\nএকটাও scene বাদ দেওয়ার উপায় নেই 😱\n⭐ {RATING} | {GENRE}\n👇 দেখো`,
+  ],
+  chill:[
+    `😌 আজকে রাতে কী দেখবে?\n{NAME} দেখো — একদম relaxing + entertaining!\n{GENRE} | ⭐ {RATING} | {LANG}\n👇 App এ পাবে`,
+    `☕ চা/কফি নিয়ে বোসো\nআর চালু করো {NAME}\nআজকের জন্য perfect {TYPE} 😊\n⭐ {RATING} | {GENRE}\n👇 App খোলো`,
+    `🛋️ আরামে বসে দেখার মতো {TYPE}\n{NAME}\nWeekend এর জন্য perfect choice!\n⭐ IMDb {RATING} | {LANG}\n👇 দেখো`,
+    `😎 কোনো চাপ নেই, just enjoy করো\n{NAME} — {GENRE} lovers এর জন্য\nসময় কাটবে দারুণভাবে ✨\n⭐ {RATING}\n👇 App এ দেখো`,
+    `🌙 রাতে ঘুমানোর আগে একটা ভালো {TYPE}?\n{NAME} দেখো!\n{GENRE} | ⭐ {RATING} | {LANG}\n👇 চালু করো`,
+    `✨ Mood ভালো করতে চাও?\n{NAME} — এইটা দেখলে মন ভালো হয়ে যাবে!\n{GENRE} | ⭐ {RATING}\n👇 App এ আছে`,
+    `🍿 Popcorn নিয়ে বোসো\n{NAME} চালু করো\nআজকের evening set! 😄\n⭐ {RATING} | {GENRE} | {LANG}\n👇 দেখো`,
+    `💆 Stress বেশি? {TYPE} দেখো!\n{NAME} — একদম সেরা চয়েস\n{GENRE} | ⭐ {RATING}\n👇 App খোলো`,
+  ],
+  dramatic:[
+    `😱 {NAME}\nএই {TYPE} এর ending দেখে চোখে পানি চলে আসবে!\nবিশ্বাস না হলে নিজেই দেখো...\n⭐ {RATING} | {GENRE}\n👇 App এ দেখো`,
+    `🤯 MIND BLOWN!\n{NAME} দেখার পর ঘণ্টার পর ঘণ্টা চিন্তা করলাম!\n{GENRE} | ⭐ IMDb {RATING}\n👇 তুমিও দেখো`,
+    `😭 এই {TYPE} দেখে কাঁদতে হবে!\n{NAME}\nEmotional journey যা ভোলা যাবে না...\n⭐ {RATING} | {LANG}\n👇 দেখো`,
+    `🔥 {NAME}\nজীবনে যা দেখেছ সব ভুলে যাও\nএই {TYPE} সব কিছু বদলে দেবে!\n⭐ {RATING} | {GENRE}\n👇 App খোলো`,
+    `💔 {NAME}\nএকটা {TYPE} কীভাবে এত কষ্ট দিতে পারে?\nনিজে দেখলেই বুঝবে... 😔\n⭐ {RATING} | {GENRE} | {LANG}\n👇 দেখো`,
+    `🎭 {NAME}\nActing দেখে হাঁ হয়ে গেছি!\nএই {TYPE} একটা masterpiece!\n⭐ IMDb {RATING}\n👇 App এ দেখো`,
+    `⚡ {NAME} — এই {TYPE} এর twist দেখে বাকরুদ্ধ!\nকেউ কিছু বলিস না, spoiler দিস না!\n⭐ {RATING} | {GENRE}\n👇 চালু করো`,
+    `🌊 {NAME}\nএই {TYPE} টা একটা emotional rollercoaster!\nReady থাকো... 😶\n⭐ {RATING} | {LANG}\n👇 দেখো`,
+  ],
+  romance:[
+    `💕 {NAME}\nএই {TYPE} দেখলে প্রেমে পড়তে ইচ্ছে করবে!\n{GENRE} | ⭐ {RATING} | {LANG}\n👇 Partner এর সাথে দেখো 😊`,
+    `❤️ আজকের romantic pick!\n{NAME}\nDate night এর জন্য perfect {TYPE}!\n⭐ {RATING} | {GENRE}\n👇 App এ দেখো`,
+    `🥰 {NAME}\nএত সুন্দর love story অনেকদিন দেখিনি!\n{GENRE} | ⭐ IMDb {RATING}\n👇 দেখো`,
+    `💝 {NAME}\nএই {TYPE} দেখার পর মনটা অনেক ভালো হয়ে যাবে!\nRomance + Drama = Perfect! ❤️\n⭐ {RATING} | {LANG}\n👇 চালু করো`,
+    `🌹 Love in the air!\n{NAME} — এই {TYPE} এর chemistry অসাধারণ!\n⭐ {RATING} | {GENRE}\n👇 App খোলো`,
+    `💞 {NAME}\nসত্যিকারের ভালোবাসা কেমন হয় দেখো!\n{GENRE} | ⭐ {RATING} | {LANG}\n👇 দেখো`,
+    `🫶 আজকের special pick!\n{NAME}\nএই {TYPE} টা হৃদয় ছুঁয়ে যাবে 💕\n⭐ {RATING} | {GENRE}\n👇 App এ দেখো`,
+    `😍 {NAME}\nRomantic {TYPE} lover দের জন্য best choice!\n⭐ IMDb {RATING} | {LANG}\n👇 দেখো`,
+  ],
+  horror:[
+    `👻 সাহস থাকলে দেখো!\n{NAME}\nএই {TYPE} রাতে একা দেখবে না! 😨\n⭐ {RATING} | {GENRE}\n👇 App এ দেখো`,
+    `😱 WARNING!\n{NAME} দেখার পর ঘুম আসবে না!\nReady আছো? 👀\n⭐ {RATING} | {LANG}\n👇 চালু করো`,
+    `🕷️ {NAME}\nএই {TYPE} এর জন্য lights on রেখো!\nBelieve me... 😰\n⭐ IMDb {RATING} | {GENRE}\n👇 দেখো`,
+    `🌑 রাত ১২টার পর দেখো\n{NAME}\nDaytime এ দেখলে মজা নেই 😏\n⭐ {RATING} | {GENRE} | {LANG}\n👇 App খোলো`,
+    `💀 {NAME}\nHorror lover দের জন্য এটা একটা gift!\nEktu ভয় পাবে, অনেক enjoy করবে 🎃\n⭐ {RATING}\n👇 দেখো`,
+    `😨 {NAME} — এই {TYPE} এর atmosphere অসাধারণ dark!\nকেউ একা দেখবে না! 👻\n⭐ {RATING} | {LANG}\n👇 App এ দেখো`,
+    `🔪 {NAME}\nThriller + Horror মিলিয়ে একটা পাগলামি {TYPE}!\n⭐ IMDb {RATING} | {GENRE}\n👇 চালু করো`,
+    `🕯️ Dark এ বসো, headphone দাও\n{NAME} চালু করো\nবাকিটা নিজেই বুঝবে... 😶\n⭐ {RATING}\n👇 দেখো`,
+  ],
+  action:[
+    `💥 ACTION LOADED!\n{NAME}\nএই {TYPE} এর প্রতিটা scene আগুন! 🔥\n⭐ {RATING} | {GENRE} | {LANG}\n👇 দেখো`,
+    `🏃 Non-stop action!\n{NAME}\nএক মিনিটও boring না!\n⭐ IMDb {RATING} | {GENRE}\n👇 App এ দেখো`,
+    `🎯 {NAME}\nAction lover দের জন্য এইটা must watch!\nFight scenes গুলো একদম 🔥\n⭐ {RATING} | {LANG}\n👇 চালু করো`,
+    `⚔️ {NAME}\nএই {TYPE} দেখলে adrenaline rush হবেই!\n{GENRE} | ⭐ {RATING}\n👇 App খোলো`,
+    `🚀 {NAME}\nHollywood এর সেরা action {TYPE} গুলোর একটা!\n⭐ IMDb {RATING} | {LANG} | {GENRE}\n👇 দেখো`,
+    `💣 BOOM!\n{NAME} — এই {TYPE} এর climax দেখলে চিৎকার করতে হবে!\n⭐ {RATING} | {GENRE}\n👇 দেখো`,
+    `🥊 {NAME}\nAction + Thriller = Perfect combo!\nএই {TYPE} skip করা যাবে না 💪\n⭐ {RATING} | {LANG}\n👇 App এ দেখো`,
+    `🔫 {NAME}\nভাই এইটা দেখে হাত কামড়াইছি!\n{GENRE} | ⭐ {RATING}\n👇 চালু করো এখনই`,
+  ],
+  comedy:[
+    `😂 হাসতে হাসতে পেট ব্যাথা হবে!\n{NAME}\nএই {TYPE} দেখো আর enjoy করো!\n⭐ {RATING} | {GENRE} | {LANG}\n👇 App এ দেখো`,
+    `🤣 {NAME}\nMood খারাপ? এই {TYPE} দেখলেই ঠিক হবে!\n{GENRE} | ⭐ IMDb {RATING}\n👇 দেখো`,
+    `😄 আজকের fun pick!\n{NAME}\nHasir {TYPE} যারা পছন্দ করো তাদের জন্য!\n⭐ {RATING} | {LANG}\n👇 চালু করো`,
+    `🎭 {NAME}\nএই {TYPE} দেখে পুরো পরিবার হাসবে!\nFamily entertainment at its best 😄\n⭐ {RATING} | {GENRE}\n👇 App খোলো`,
+    `😆 {NAME}\nComedyর নামে এইটা একটা masterpiece!\n⭐ IMDb {RATING} | {GENRE} | {LANG}\n👇 দেখো`,
+    `🤪 {NAME}\nপাগলামি level এর comedy {TYPE}!\nHasতে হাসতে শেষ 😂\n⭐ {RATING}\n👇 App এ দেখো`,
+    `😝 {NAME}\nStress relief এর সেরা উপায় — এই {TYPE}!\n{GENRE} | ⭐ {RATING} | {LANG}\n👇 চালু করো`,
+    `🎉 {NAME}\nWeekend mood set করতে এই {TYPE} perfect!\n⭐ IMDb {RATING} | {GENRE}\n👇 দেখো`,
+  ],
+  scifi:[
+    `🚀 {NAME}\nভবিষ্যতের দুনিয়া দেখতে চাও?\nএই {TYPE} দেখো! 🌌\n⭐ {RATING} | {GENRE} | {LANG}\n👇 App এ দেখো`,
+    `🌌 Mind-bending!\n{NAME}\nএই {TYPE} দেখার পর জীবন সম্পর্কে চিন্তা বদলে যাবে!\n⭐ IMDb {RATING} | {GENRE}\n👇 দেখো`,
+    `👽 {NAME}\nSci-Fi lover দের জন্য এইটা একটা dream {TYPE}!\n⭐ {RATING} | {LANG}\n👇 চালু করো`,
+    `🤖 {NAME}\nTechnology + Action + Drama = Perfect Sci-Fi!\n⭐ {RATING} | {GENRE}\n👇 App খোলো`,
+    `⚡ {NAME}\nএই {TYPE} এর visual এবং story দুটোই অসাধারণ!\n🌌 {GENRE} | ⭐ IMDb {RATING} | {LANG}\n👇 দেখো`,
+    `🛸 {NAME}\nSpace + Mystery + Thriller = এই {TYPE}!\nEkta অন্য level এর experience 🚀\n⭐ {RATING}\n👇 App এ দেখো`,
+    `🔬 {NAME}\nScience fiction যারা ভালোবাসো তাদের জন্য best pick!\n⭐ {RATING} | {GENRE} | {LANG}\n👇 চালু করো`,
+    `🌠 {NAME}\nএই {TYPE} দেখলে universe সম্পর্কে ভাবনা বদলে যাবে!\n⭐ IMDb {RATING} | {GENRE}\n👇 দেখো`,
+  ],
+};
+
+let curCat='hype';
+
+function showCat(cat, el){
+  curCat=cat;
+  document.querySelectorAll('.pcat').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  renderPresets();
+}
+
+function renderPresets(){
+  const list=document.getElementById('preset-list');
+  const name=document.getElementById('f-name').value||'মুভির নাম';
+  const genre=document.getElementById('f-genre').value||'অ্যাকশন';
+  const rating=document.getElementById('f-rating').value||'8.0/10';
+  const lang=document.getElementById('f-lang').value||'ইংরেজি';
+  const type=curType||'Movie';
+
+  list.innerHTML='';
+  (PRESETS[curCat]||[]).forEach((tmpl,i)=>{
+    const text=tmpl
+      .replace(/{NAME}/g,name)
+      .replace(/{GENRE}/g,genre)
+      .replace(/{RATING}/g,rating)
+      .replace(/{LANG}/g,lang)
+      .replace(/{TYPE}/g,type);
+
+    const item=document.createElement('div');
+    item.className='preset-item';
+    item.innerHTML=`
+      <div class="preset-text">${text.replace(/\n/g,'<br>')}</div>
+      <div class="preset-copy-hint">👆 ট্যাপ করে copy করো</div>
+      <div class="preset-copied" id="pc-${i}">✅ COPIED!</div>
+    `;
+    item.onclick=()=>{
+      navigator.clipboard.writeText(text).catch(()=>{
+        const ta=document.createElement('textarea');
+        ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+        document.body.removeChild(ta);
+      });
+      const badge=document.getElementById(`pc-${i}`);
+      badge.classList.add('show');
+      setTimeout(()=>badge.classList.remove('show'),1800);
+    };
+    list.appendChild(item);
+  });
+}
+
+
+document.fonts.load("700 90px 'Hind Siliguri'");
+document.fonts.load("700 50px 'Hind Siliguri'");
+document.fonts.load("700 30px 'Hind Siliguri'");
+document.fonts.load("400 64px 'Bebas Neue'");
+document.fonts.load("700 26px 'Rajdhani'");
+
+upd();
+// renderPresets is called inside upd()
+</script>
+</body>
+</html>
